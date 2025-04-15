@@ -1,5 +1,8 @@
-{% extends "base.html" %} {% block graph_active -%} active {%- endblock %} {%
-block content %}
+{% extends "base.html" %}
+{% block graph_active -%}
+active
+{%- endblock %}
+{% block content %}
 <form
   hx-get="{{ url_for('graphs', replace=False) }}"
   hx-trigger="change"
@@ -60,6 +63,12 @@ block content %}
     </div>
   </div>
   {% endfor %}
+   <div class="col-auto">
+     <img src="{{ url_for('static', filename='config-info.png') }}" style="height: 5em;">
+   </div>
+   <div class="col-auto">
+     <img src="{{ url_for('static', filename='axis-info.png') }}" style="height: 5em;">
+   </div>
 </form>
 <div class="row flex-grow-1 overflow-auto mt-2">
   <div class="col" id="graphs" hx-history="false">
@@ -67,7 +76,7 @@ block content %}
     <div class="row">
       <div
         class="col d-flex justify-content-center align-items-center"
-        style="min-height: 50vh"
+        style="height: 80vh;"
       >
         <div
           class="spinner-border"

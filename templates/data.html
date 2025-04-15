@@ -3,17 +3,21 @@
   active
 {%- endblock %}
 {% block content %}
-<div class="row h-100">
-  <div class="col h-100"
+<div class="row h-100 py-2">
+  <div class="col"
+    style="height: 99%;"
     hx-history="false"
     x-data="{table: null}"
+    x-cloak
     x-init="() => {
       table = new DataTable('#data-table', {
         serverSide: true,
         processing: true,
         ajax: '/data/table',
         scrollX: true,
-        scrollY: '60vh',
+        scrollY: '50vh',
+        scrollResize: true,
+        scrollCollapse: true,
         stateSave: true,
       });
       return () => {
