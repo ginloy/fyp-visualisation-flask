@@ -63,11 +63,22 @@ active
     </div>
   </div>
   {% endfor %}
-   <div class="col-auto">
-     <img src="{{ url_for('static', filename='config-info.png') }}" style="height: 5em;">
+  <div class="col-auto">
+    <img 
+      src="{{ url_for('static', filename='config-info.png') }}"
+      x-data="{height: 5, cursor: 'zoom-in'}"
+      @click="height = height == 5 ? 20 : 5; cursor = height == 5 ? 'zoom-in' : 'zoom-out'"
+      x-cloak
+      x-effect="$el.style.height = `${height}em`; $el.style.cursor = cursor"
+    >
    </div>
    <div class="col-auto">
-     <img src="{{ url_for('static', filename='axis-info.png') }}" style="height: 5em;">
+     <img 
+      src="{{ url_for('static', filename='axis-info.png') }}"
+      x-data="{height: 5, cursor: 'zoom-in'}"
+      @click="height = height == 5 ? 20 : 5; cursor = height == 5 ? 'zoom-in' : 'zoom-out'"
+      x-cloak
+      x-effect="$el.style.height = `${height}em`; $el.style.cursor = cursor">
    </div>
 </form>
 <div class="row flex-grow-1 overflow-auto mt-2">
