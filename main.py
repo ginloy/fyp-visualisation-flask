@@ -12,6 +12,9 @@ from flask import (
 import polars as pl
 import polars.selectors as cs
 import plotly.express as px
+import plotly.graph_objs as go
+import numpy as np
+import scipy.signal as ss
 from flask_caching import Cache
 from dash_bootstrap_templates import load_figure_template
 
@@ -37,6 +40,46 @@ SELECTORS = [
     dict(name="config", label="Select config", options=UNIQUE_CONFIGS),
     dict(name="accel_pos", label="Select Accel Position", options=UNIQUE_POS),
 ]
+
+
+def make_graph_with_peaks(df: pl.DataFrame, n: int, title: str):
+    def get_peaks(arr: np.ndarray) -> np.ndarray:
+        peak_idxs, _ = ss.find_peaks(arr)
+        prominences = ss.peak_prominences(arr, peak_idxs)[0]
+        top_idxs = np.argsort(prominences)[: -n - 1 : -1]
+        return peak_idxs[top_idxs]
+
+    fig = go.Figure()
+    colors = px.colors.qualitative.Plotly
+    for i, (group, dff) in enumerate(df.group_by("axis", maintain_order=True)):
+        axis = group[0]
+        peak_idxs = get_peaks(dff["data_mag"].to_numpy())
+        x = dff["x"]
+        y = dff["data_mag"]
+        peaks_x = x[peak_idxs]
+        peaks_y = y[peak_idxs]
+        fig.add_scatter(
+            x=x, y=y, name=axis, legendgroup=f"{i * 2}", line=dict(color=colors[i * 2])
+        )
+        fig.add_scatter(
+            x=peaks_x,
+            y=peaks_y,
+            name=f"{axis} peaks",
+            marker=dict(symbol="x", size=8, color=colors[i * 2 + 1]),
+            mode="markers",
+            legendgroup=f"{i * 2 + 1}",
+        )
+        for x, y in zip(peaks_x, peaks_y):
+            fig.add_scatter(
+                x=[x, x],
+                y=[0, y],
+                line=dict(dash="dash", color=colors[i * 2 + 1]),
+                legendgroup=f"{i * 2 + 1}",
+                showlegend=False,
+            )
+    fig.update_layout(title=dict(text=title))
+
+    return fig
 
 
 @app.get("/")
@@ -86,17 +129,26 @@ def get_graph(id1: str):
     if len(pos_filter) > 0:
         df = df.filter(pl.col("accel_pos").is_in(pos_filter))
 
-    fig = px.line(
-        df.collect(),
-        x="x",
-        y="data_mag",
-        color="axis",
-        facet_col="config",
-        facet_row="accel_pos",
-        render_mode="webgl",
+    if (
+        len(config_filter) == 1
+        and len(pos_filter) == 1
+        and (id1 == "FRF" or id1 == "FFT")
+    ):
+        fig = make_graph_with_peaks(df.collect(), 5, id1)
+    else:
+        fig = px.line(
+            df.collect(),
+            x="x",
+            y="data_mag" if id1 != "Time" else "data_real",
+            color="axis",
+            facet_col="config",
+            facet_row="accel_pos",
+            render_mode="webgl",
+        )
+    fig.update_layout(
+        dict(title=dict(text=id1), autosize=True),
         template="bootstrap_dark" if theme == "dark" else "bootstrap",
     )
-    fig.update_layout(dict(title=dict(text=id1), autosize=True))
     fig_html = fig.to_html(
         include_plotlyjs=False, full_html=False, default_height="80vh"
     )
