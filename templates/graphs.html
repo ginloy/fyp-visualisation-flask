@@ -1,0 +1,85 @@
+{% extends "base.html" %} {% block graph_active -%} active {%- endblock %} {%
+block content %}
+<form
+  hx-get="{{ url_for('graphs', replace=False) }}"
+  hx-trigger="change"
+  hx-replace-url="true"
+  hx-target="#graphs"
+  hx-select="#graphs"
+  hx-swap="outerHTML"
+  x-data="{id1: [], config: [], accel_pos: [], ...{{ form_state }}}"
+  class="row mt-2"
+>
+  {% for selector in selectors %}
+  <div class="col-auto">
+    <div class="btn-group border" role="group">
+      <div class="btn-group dropdown" role="group">
+        <button
+          type="button"
+          class="btn dropdown-toggle"
+          data-bs-toggle="dropdown"
+          data-bs-auto-close="outside"
+        >
+          {{ selector.label }}
+        </button>
+        <ul class="dropdown-menu">
+          {% for option in selector.options %}
+          <div class="px-2">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              name="{{ selector.name }}"
+              value="{{ option }}"
+              id="checkbox-{{ selector.name }}-{{ option }}"
+              x-model="{{ selector.name }}"
+            />
+            <label
+              class="form-check-label"
+              for="checkbox-{{ selector.name }}-{{ option }}"
+              >{{ option }}</label
+            >
+          </div>
+          {% endfor %}
+        </ul>
+      </div>
+      <button
+        type="button"
+        class="btn"
+        @click="{{ selector.name }} = {{ selector.options }}; $nextTick(() => $dispatch('change'))"
+      >
+        <i class="bi bi-asterisk text-success"></i>
+      </button>
+      <button
+        type="button"
+        class="btn"
+        @click="{{ selector.name }} = []; $nextTick(() => $dispatch('change'))"
+        id="clear-selection-{{ selector.name }}"
+      >
+        <i class="bi bi-x-square text-danger"></i>
+      </button>
+    </div>
+  </div>
+  {% endfor %}
+</form>
+<div class="row flex-grow-1 overflow-auto mt-2">
+  <div class="col" id="graphs" hx-history="false">
+    {% for id1 in params.getlist('id1') %}
+    <div class="row">
+      <div
+        class="col d-flex justify-content-center align-items-center"
+        style="min-height: 50vh"
+      >
+        <div
+          class="spinner-border"
+          role="status"
+          hx-trigger="load"
+          hx-get="{{ url_for('get_graph', id1=id1, config=params.getlist('config'), accel_pos=params.getlist('accel_pos')) }}"
+          hx-vals="js:{theme: Alpine.store('theme').val}"
+          hx-swap="outerHTML"
+        ></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

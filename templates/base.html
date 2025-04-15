@@ -1,0 +1,128 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Test</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css"
+    />
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.min.js"
+      integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
+      crossorigin="anonymous"
+      async
+    ></script>
+    <script
+      src="https://cdn.plot.ly/plotly-3.0.1.min.js"
+      charset="utf-8"
+      defer
+    ></script>
+    <script
+      src="https://unpkg.com/htmx.org@2.0.4"
+      integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+      .fade-in.htmx-added {
+        opacity: 0;
+      }
+      .fade-in {
+        opacity: 1;
+        transition: opacity 500ms ease-in-out;
+      }
+      .fade-out.htmx-swapping {
+        opacity: 0;
+        transition: opacity 200ms ease-in-out;
+      }
+    </style>
+    <script>
+      document.addEventListener("alpine:initializing", () => {
+        Alpine.store("theme", {
+          val: Alpine.$persist("light").as("theme"),
+          toggle() {
+            this.val = this.val == "light" ? "dark" : "light";
+          },
+        });
+      });
+    </script>
+  </head>
+  <body
+    x-cloak
+    class="d-flex flex-column vh-100"
+    id="body"
+    x-data
+    :data-bs-theme="$store.theme.val"
+  >
+    <nav class="navbar navbar-expand-sm bg-body-secondary">
+      <div class="container-fluid">
+        <div class="navbar-nav nav-tabs" hx-boost="true" id="navlinks">
+          <a
+            class="nav-link {% block graph_active %}{% endblock %}"
+            href="{{ url_for('graphs') }}"
+          >
+            Graphs
+          </a>
+          <a
+            class="nav-link {% block data_active %}{% endblock %}"
+            href="{{ url_for('raw_data') }}"
+          >
+            Raw Data
+          </a>
+        </div>
+        <div class="d-flex" hx-boost="false">
+          <i class="bi bi-sun-fill"></i>
+          <div class="form-check form-switch ms-2">
+            <input
+              x-cloak
+              type="checkbox"
+              class="form-check-input"
+              id="theme-switch"
+              @change="$store.theme.toggle()"
+              :checked="$store.theme.val === 'dark'"
+              hx-get="/graphs"
+              hx-swap="none"
+              hx-select-oob="#graphs"
+            />
+            <i class="bi bi-moon-fill"></i>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <div
+      class="container-fluid d-flex flex-column flex-grow-1 overflow-auto"
+      id="main-content"
+    >
+      {% block content %} {% endblock %}
+    </div>
+  </body>
+</html>

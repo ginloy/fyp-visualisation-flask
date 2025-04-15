@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block data_active -%}
+  active
+{%- endblock %}
+{% block content %}
+<div class="row h-100">
+  <div class="col h-100"
+    hx-history="false"
+    x-data="{table: null}"
+    x-init="() => {
+      table = new DataTable('#data-table', {
+        serverSide: true,
+        processing: true,
+        ajax: '/data/table',
+        scrollX: true,
+        scrollY: '60vh',
+        stateSave: true,
+      });
+      return () => {
+        table.destroy();
+      }
+    }"
+    >
+      <table
+        id="data-table"
+        class="display table" 
+      >
+      <thead>
+        <tr>
+          {% for header in headers %}
+            <th>{{ header }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tfoot>
+        <tr>
+          {% for header in headers %}
+            <th>
+              <input 
+                type="search"
+                placeholder="{{ header }}" 
+                x-data="{value: $persist('').as('search-{{ header }}')}"
+                x-model="value"
+                @input.debounce="() => $( '#data-table' ).DataTable().column({{ loop.index - 1 }}).search(value).draw()"
+              />
+            </th>
+          {% endfor %}
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+{% endblock %}
