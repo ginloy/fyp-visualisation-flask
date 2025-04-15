@@ -12,6 +12,7 @@ RUN uv sync
 COPY static ./static
 COPY cleaned.pq ./
 COPY *.py ./
+COPY templates ./templates
 
 # # Install dependencies (uv creates a virtual environment automatically)
 # RUN uv venv && \
